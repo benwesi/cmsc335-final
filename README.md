@@ -6,7 +6,7 @@
 
 **YouTube Video Link:** [INSERT YOUR YOUTUBE LINK HERE]
 
-**APIs:** Quotable API (https://quotable.io) - Provides motivational and educational quotes
+**APIs:** Quotable API (https://zenquotes.io) - Provides motivational and educational quotes
 
 **Contact Email:** benwesi@umd.edu
 
