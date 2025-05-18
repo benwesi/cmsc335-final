@@ -4,9 +4,9 @@
 
 **App Description:** A comprehensive web application for tracking academic grades, calculating GPA, and determining required scores for target grades.
 
-**YouTube Video Link:** [INSERT YOUR YOUTUBE LINK HERE]
+**YouTube Video Link:** [https://www.youtube.com/watch?v=fPxW4eCRVYw]
 
-**APIs:** Quotable API (https://zenquotes.io) - Provides motivational and educational quotes
+**APIs:** Quotable API [https://zenquotes.io] - Provides motivational and educational quotes
 
 **Contact Email:** benwesi@umd.edu
 
