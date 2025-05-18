@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Grade Calculator</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Grade Calculator</a>
+            <ul class="nav-links">
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/courses">My Courses</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Welcome back, <%= user.name %>! Here's your academic overview.</p>
+            </div>
+
+            <div class="header-actions">
+                <a href="/courses/add" class="quick-action-btn">
+                    <span>Add Course</span>
+                </a>
+                <% if (courses.length > 0) { %>
+                    <a href="/assignments/add/<%= courses[0]._id %>" class="quick-action-btn">
+                        <span>Add Assignment</span>
+                    </a>
+                    <a href="/assignments/calculator/<%= courses[0]._id %>" class="quick-action-btn primary">
+                        <span>Calculator</span>
+                    </a>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="stats mb-4">
+            <div class="stat-card">
+                <div class="stat-label">Overall GPA</div>
+                <div class="stat-value"><%= overallGPA %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Courses</div>
+                <div class="stat-value"><%= courses.length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Recent Assignments</div>
+                <div class="stat-value"><%= assignments.length %></div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-section">
+                <div class="section-header-simple">
+                    <h2 class="section-title">My Courses</h2>
+                    <a href="/courses" class="view-all-link">View All →</a>
+                </div>
+                
+                <% if (courses.length > 0) { %>
+                    <div class="card-grid">
+                        <% courses.forEach((course, index) => { %>
+                            <% if (index < 4) { %> 
+                                <div class="dashboard-card course-card">
+                                    <div class="card-content">
+                                        <h3 class="card-title"><%= course.name %></h3>
+                                        <p class="card-subtitle"><%= course.code %></p>
+                                        <div class="card-meta">
+                                            <span class="meta-item">
+                                                <span class="meta-label">Credits:</span>
+                                                <span class="meta-value"><%= course.credits %></span>
+                                            </span>
+                                            <span class="meta-item">
+                                                <span class="meta-label">Semester:</span>
+                                                <span class="meta-value"><%= course.semester %> <%= course.year %></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <a href="/courses/<%= course._id %>" class="btn btn-primary btn-sm">View Details</a>
+                                        <a href="/assignments/add/<%= course._id %>" class="btn btn-outline btn-sm">Add Assignment</a>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% }) %>
+                        <% if (courses.length < 4) { %>
+                            <div class="dashboard-card add-card">
+                                <div class="add-card-content">
+                                    <div class="add-card-icon">+</div>
+                                    <h3 class="add-card-title">Add Course</h3>
+                                    <p class="add-card-description">Start tracking a new class</p>
+                                </div>
+                                <a href="/courses/add" class="card-overlay"></a>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state-compact">
+                        <h3 class="empty-title">No courses yet</h3>
+                        <p class="empty-description">Start by adding your first course!</p>
+                        <a href="/courses/add" class="btn btn-primary">Add Your First Course</a>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="dashboard-section">
+                <div class="section-header-simple">
+                    <h2 class="section-title">Recent Assignments</h2>
+                    <% if (assignments.length > 0) { %>
+                        <span class="assignment-count"><%= assignments.length %> total</span>
+                    <% } %>
+                </div>
+                
+                <% if (assignments.length > 0) { %>
+                    <div class="assignment-stack">
+                        <% assignments.forEach((assignment, index) => { %>
+                            <% if (index < 5) { %> 
+                                <div class="assignment-item-compact">
+                                    <div class="assignment-info">
+                                        <h4 class="assignment-name"><%= assignment.name %></h4>
+                                        <p class="assignment-course"><%= assignment.courseId.name %></p>
+                                        <div class="assignment-tags">
+                                            <span class="type-badge type-<%= assignment.type %>"><%= assignment.type %></span>
+                                            <span class="weight-tag"><%= assignment.weight %>%</span>
+                                        </div>
+                                    </div>
+                                    <div class="assignment-grade">
+                                        <% if (assignment.isCompleted) { %>
+                                            <span class="grade grade-<%= assignment.grade >= 90 ? 'a' : assignment.grade >= 80 ? 'b' : assignment.grade >= 70 ? 'c' : assignment.grade >= 60 ? 'd' : 'f' %>">
+                                                <%= assignment.grade %>%
+                                            </span>
+                                        <% } else { %>
+                                            <span class="status-badge status-pending">Pending</span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state-compact">
+                        <h3 class="empty-title">No assignments yet</h3>
+                        <p class="empty-description">Add assignments to track your progress</p>
+                    </div>
+                <% } %>
+
+                <div class="activity-section">
+                    <h3 class="activity-title">Quick Stats</h3>
+                    <div class="activity-stats">
+                        <div class="activity-stat">
+                            <span class="stat-number"><%= assignments.filter(a => a.isCompleted).length %></span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                        <div class="activity-stat">
+                            <span class="stat-number"><%= assignments.filter(a => !a.isCompleted).length %></span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                        <% 
+                            const avgGrade = assignments.filter(a => a.isCompleted && a.grade).length > 0 
+                                ? (assignments.filter(a => a.isCompleted && a.grade).reduce((sum, a) => sum + a.grade, 0) / assignments.filter(a => a.isCompleted && a.grade).length).toFixed(1) 
+                                : 0;
+                        %>
+                        <div class="activity-stat">
+                            <span class="stat-number"><%= avgGrade %>%</span>
+                            <span class="stat-label">Avg Grade</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Grade Calculator. Built for CMSC335 Final Project.</p>
+        </div>
+    </footer>
+</body>
+</html>

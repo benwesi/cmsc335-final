@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Grade Calculator</a>
+            <ul class="nav-links">
+                <% if (user) { %>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/courses">My Courses</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                <% } else { %>
+                    <li><a href="#login">Login</a></li>
+                <% } %>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <% if (!user) { %>
+        <section class="hero">
+            <div class="container">
+                <h1>Track Your Academic Success</h1>
+                <p>Calculate your grades, track your GPA, and achieve your academic goals</p>
+                <a href="#login" class="btn btn-primary">Get Started</a>
+            </div>
+        </section>
+
+        <section class="quote-section container">
+            <div class="quote-content">"<%= quote.content %>"</div>
+            <div class="quote-author">— <%= quote.author %></div>
+        </section>
+
+        <section id="login" class="container">
+            <div class="card" style="max-width: 400px; margin: 0 auto;">
+                <div class="card-header">
+                    <h2 class="card-title">Login / Sign Up</h2>
+                </div>
+                <form action="/login" method="POST">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Continue</button>
+                </form>
+            </div>
+        </section>
+        <% } else { %>
+        <section class="hero">
+            <div class="container">
+                <h1>Welcome back, <%= user.name %>!</h1>
+                <p>Ready to track your academic progress?</p>
+                <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+        </section>
+
+        <section class="quote-section container">
+            <div class="quote-content">"<%= quote.content %>"</div>
+            <div class="quote-author">— <%= quote.author %></div>
+        </section>
+        <% } %>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Grade Calculator. Built for CMSC335 Final Project.</p>
+        </div>
+    </footer>
+</body>
+</html>

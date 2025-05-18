@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= course.name %> - Grade Calculator</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Grade Calculator</a>
+            <ul class="nav-links">
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/courses">My Courses</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="course-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1><%= course.name %></h1>
+                    <p><%= course.code %> - <%= course.credits %> credits - <%= course.semester %> <%= course.year %></p>
+                </div>
+                <div class="page-actions">
+                    <a href="/assignments/add/<%= course._id %>" class="btn btn-primary">Add Assignment</a>
+                    <a href="/assignments/calculator/<%= course._id %>" class="btn btn-success">Grade Calculator</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats mb-4">
+            <div class="stat-card">
+                <div class="stat-label">Current Grade</div>
+                <div class="stat-value">
+                    <% if (currentGrade !== null) { %>
+                        <%= currentGrade %>%
+                    <% } else { %>
+                        No grades yet
+                    <% } %>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Assignments</div>
+                <div class="stat-value"><%= assignments.length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Completed Assignments</div>
+                <div class="stat-value"><%= assignments.filter(a => a.isCompleted).length %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Remaining Weight</div>
+                <div class="stat-value"><%= remainingWeight %>%</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Assignments</h2>
+            </div>
+            <% if (assignments.length > 0) { %>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Assignment</th>
+                            <th>Type</th>
+                            <th>Weight</th>
+                            <th>Grade</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% assignments.forEach(assignment => { %>
+                            <tr>
+                                <td><%= assignment.name %></td>
+                                <td><span class="type-badge type-<%= assignment.type %>"><%= assignment.type %></span></td>
+                                <td><%= assignment.weight %>%</td>
+                                <td>
+                                    <% if (assignment.isCompleted && assignment.grade !== undefined) { %>
+                                        <span class="grade grade-<%= assignment.grade >= 90 ? 'a' : assignment.grade >= 80 ? 'b' : assignment.grade >= 70 ? 'c' : assignment.grade >= 60 ? 'd' : 'f' %>">
+                                            <%= assignment.grade %>/<%= assignment.maxGrade %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="status-badge status-not-graded">Not graded</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (assignment.isCompleted) { %>
+                                        <span class="status-badge status-completed">Completed</span>
+                                    <% } else { %>
+                                        <span class="status-badge status-pending">Pending</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (assignment.dueDate) { %>
+                                        <%= new Date(assignment.dueDate).toLocaleDateString() %>
+                                    <% } else { %>
+                                        <span style="color: #6b7280;">No due date</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <a href="/assignments/edit/<%= assignment._id %>" class="btn btn-sm btn-secondary">Edit</a>
+                                    <form action="/assignments/delete/<%= assignment._id %>" method="POST" style="display: inline;" 
+                                          onsubmit="return confirm('Are you sure you want to delete this assignment?')">
+                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p style="text-align: center; color: #6b7280; padding: 2rem;">No assignments yet. Add your first assignment to start tracking grades!</p>
+                <div class="text-center">
+                    <a href="/assignments/add/<%= course._id %>" class="btn btn-primary">Add First Assignment</a>
+                </div>
+            <% } %>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Grade Calculator. Built for CMSC335 Final Project.</p>
+        </div>
+    </footer>
+</body>
+</html>

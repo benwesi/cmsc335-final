@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Assignment - Grade Calculator</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Grade Calculator</a>
+            <ul class="nav-links">
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/courses">My Courses</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Add Assignment to <%= course.name %></h1>
+        
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <form action="/assignments/add/<%= course._id %>" method="POST">
+                <div class="form-group">
+                    <label for="name">Assignment Name</label>
+                    <input type="text" id="name" name="name" required placeholder="e.g., Midterm Exam">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        <select id="type" name="type" required>
+                            <option value="">Select Type</option>
+                            <option value="exam">Exam</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="homework">Homework</option>
+                            <option value="project">Project</option>
+                            <option value="lab">Lab</option>
+                            <option value="participation">Participation</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weight">Weight (%)</label>
+                        <input type="number" id="weight" name="weight" min="0" max="100" step="0.1" required placeholder="e.g., 20">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="maxGrade">Max Points</label>
+                        <input type="number" id="maxGrade" name="maxGrade" min="1" step="0.1" value="100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" id="dueDate" name="dueDate">
+                    </div>
+                </div>
+                
+                <div class="checkbox-group mb-3">
+                    <input type="checkbox" id="isCompleted" name="isCompleted">
+                    <label for="isCompleted">Assignment is completed and graded</label>
+                </div>
+                
+                <div class="form-group" id="gradeGroup" style="display: none;">
+                    <label for="grade">Grade (Points Earned)</label>
+                    <input type="number" id="grade" name="grade" min="0" step="0.1" placeholder="e.g., 85">
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <a href="/courses/<%= course._id %>" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Add Assignment</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Grade Calculator. Built for CMSC335 Final Project.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('isCompleted').addEventListener('change', function() {
+            const gradeGroup = document.getElementById('gradeGroup');
+            const gradeInput = document.getElementById('grade');
+            
+            if (this.checked) {
+                gradeGroup.style.display = 'block';
+                gradeInput.required = true;
+            } else {
+                gradeGroup.style.display = 'none';
+                gradeInput.required = false;
+                gradeInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

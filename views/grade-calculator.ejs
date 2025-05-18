@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Calculator - <%= course.name %></title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">Grade Calculator</a>
+            <ul class="nav-links">
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/courses">My Courses</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h1>Grade Calculator for <%= course.name %></h1>
+        <p>Calculate what grade you need on future assignments to reach your target grade.</p>
+
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Current Status</h2>
+                </div>
+                <% 
+                    let currentWeightedScore = 0;
+                    let completedWeight = 0;
+                    let totalWeight = 0;
+                    
+                    assignments.forEach(assignment => {
+                        totalWeight += assignment.weight;
+                        if (assignment.isCompleted && assignment.grade !== undefined) {
+                            const percentage = (assignment.grade / assignment.maxGrade) * 100;
+                            currentWeightedScore += percentage * (assignment.weight / 100);
+                            completedWeight += assignment.weight;
+                        }
+                    });
+                    
+                    const currentGrade = completedWeight > 0 ? (currentWeightedScore / (completedWeight / 100)).toFixed(1) : 0;
+                    const remainingWeight = 100 - completedWeight;
+                %>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Current Grade</div>
+                        <div class="stat-value"><%= currentGrade %>%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completed Weight</div>
+                        <div class="stat-value"><%= completedWeight %>%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Remaining Weight</div>
+                        <div class="stat-value"><%= remainingWeight %>%</div>
+                    </div>
+                </div>
+
+                <h3>Completed Assignments</h3>
+                <% if (assignments.filter(a => a.isCompleted).length > 0) { %>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Assignment</th>
+                                <th>Grade</th>
+                                <th>Weight</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% assignments.forEach(assignment => { %>
+                                <% if (assignment.isCompleted && assignment.grade !== undefined) { %>
+                                    <tr>
+                                        <td><%= assignment.name %></td>
+                                        <td><%= assignment.grade %>/<%= assignment.maxGrade %> (<%= ((assignment.grade / assignment.maxGrade) * 100).toFixed(1) %>%)</td>
+                                        <td><%= assignment.weight %>%</td>
+                                    </tr>
+                                <% } %>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <p style="color: #6b7280;">No completed assignments yet.</p>
+                <% } %>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Calculate Required Grade</h2>
+                </div>
+                
+                <form id="calculatorForm">
+                    <div class="form-group">
+                        <label for="targetGrade">Target Grade (%)</label>
+                        <input type="number" id="targetGrade" min="0" max="100" step="0.1" required placeholder="e.g., 90">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="futureWeight">Weight of Future Assignment(s) (%)</label>
+                        <input type="number" id="futureWeight" min="0" max="<%= remainingWeight %>" step="0.1" required placeholder="e.g., 30">
+                        <small style="color: #6b7280;">Maximum: <%= remainingWeight %>%</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Calculate</button>
+                </form>
+
+                <div id="calculatorResult" class="calculator-result" style="display: none;">
+                    <h3>Result</h3>
+                    <div class="result-value" id="resultText"></div>
+                    <div id="resultExplanation" style="margin-top: 1rem; color: #6b7280; font-size: 14px;"></div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Pending Assignments</h3>
+                    <% const pendingAssignments = assignments.filter(a => !a.isCompleted); %>
+                    <% if (pendingAssignments.length > 0) { %>
+                        <ul style="list-style: none; padding: 0;">
+                            <% pendingAssignments.forEach(assignment => { %>
+                                <li style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between;">
+                                    <span><%= assignment.name %> (<%= assignment.type %>)</span>
+                                    <span style="font-weight: 500;"><%= assignment.weight %>%</span>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    <% } else { %>
+                        <p style="color: #6b7280;">No pending assignments.</p>
+                        <a href="/assignments/add/<%= course._id %>" class="btn btn-sm btn-secondary">Add Assignment</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Grade Calculator. Built for CMSC335 Final Project.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('calculatorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const targetGrade = document.getElementById('targetGrade').value;
+            const futureWeight = document.getElementById('futureWeight').value;
+            
+            if (!targetGrade || !futureWeight) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/assignments/calculate/<%= course._id %>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        targetGrade: parseFloat(targetGrade),
+                        futureAssignmentWeight: parseFloat(futureWeight)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const resultDiv = document.getElementById('calculatorResult');
+                    const resultText = document.getElementById('resultText');
+                    const resultExplanation = document.getElementById('resultExplanation');
+                    
+                    resultText.textContent = `You need ${data.neededGrade}% on future assignments`;
+                    
+                    if (data.isAchievable) {
+                        resultText.style.color = '#10b981';
+                        resultExplanation.textContent = `This is achievable! With your current grade of ${data.currentGrade}%, you need to score ${data.neededGrade}% on assignments worth ${futureWeight}% to reach your target of ${targetGrade}%.`;
+                    } else {
+                        resultText.style.color = '#ef4444';
+                        resultExplanation.textContent = `This target may not be achievable. You would need to score ${data.neededGrade}% (above 100%) on assignments worth ${futureWeight}% to reach your target of ${targetGrade}%. Consider adjusting your target grade.`;
+                    }
+                    
+                    resultDiv.style.display = 'block';
+                } else {
+                    alert('Error calculating grade: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error calculating grade: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
