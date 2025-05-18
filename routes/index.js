@@ -1,20 +1,21 @@
-const express = require('express');
-const router = express.Router();
-const axios = require('axios');
-const User = require('../models/User');
-const Course = require('../models/Course');
+const express    = require('express');
+const router     = express.Router();
+const axios      = require('axios');
+const User       = require('../models/User');
+const Course     = require('../models/Course');
 const Assignment = require('../models/Assignment');
 
-
 router.get('/', async (req, res) => {
-  let quote = { content: 'Success is the sum of small efforts repeated day in and day out.', author: 'Robert Collier' };
-  
-  try {
+  let quote = {
+    content: 'Success is the sum of small efforts repeated day in and day out.',
+    author:  'Robert Collier'
+  };
 
-    const response = await axios.get('https://api.quotable.io/random?tags=education,success,motivational');
-    quote = response.data;
+  try {
+    const [apiQuote] = (await axios.get('https://zenquotes.io/api/random')).data;
+    quote = { content: apiQuote.q, author: apiQuote.a };
   } catch (error) {
-    console.log('Could not fetch quote:', error.message);
+    console.error('zenquotes:', error.response?.status, error.message);
   }
 
   res.render('index', { quote, user: req.session.user });
@@ -22,15 +23,12 @@ router.get('/', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { name, email } = req.body;
-  
   try {
     let user = await User.findOne({ email });
-    
     if (!user) {
       user = new User({ name, email });
       await user.save();
     }
-    
     req.session.user = user;
     res.redirect('/dashboard');
   } catch (error) {
@@ -38,55 +36,44 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
 router.get('/dashboard', async (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/');
-  }
-
+  if (!req.session.user) return res.redirect('/');
   try {
     const courses = await Course.find({ userId: req.session.user._id });
     const assignments = await Assignment.find({ userId: req.session.user._id }).populate('courseId');
-    
     let totalPoints = 0;
     let totalCredits = 0;
-    
     for (const course of courses) {
-      const courseAssignments = assignments.filter(a => a.courseId._id.toString() === course._id.toString());
+      const courseAssignments = assignments.filter(
+        a => a.courseId._id.toString() === course._id.toString()
+      );
       const courseGrade = calculateCourseGrade(courseAssignments);
-      
       if (courseGrade !== null) {
         totalPoints += gradeToGPA(courseGrade) * course.credits;
         totalCredits += course.credits;
       }
     }
-    
     const overallGPA = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : 0;
-    
-    res.render('dashboard', { 
-      user: req.session.user, 
-      courses, 
+    res.render('dashboard', {
+      user: req.session.user,
+      courses,
       assignments: assignments.slice(0, 5),
-      overallGPA 
+      overallGPA
     });
   } catch (error) {
     res.status(500).send('Error loading dashboard: ' + error.message);
   }
 });
 
-
 router.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/');
 });
 
-
 function calculateCourseGrade(assignments) {
   if (assignments.length === 0) return null;
-  
   let totalWeightedScore = 0;
   let totalWeight = 0;
-  
   for (const assignment of assignments) {
     if (assignment.isCompleted && assignment.grade !== undefined) {
       const percentage = (assignment.grade / assignment.maxGrade) * 100;
@@ -94,7 +81,6 @@ function calculateCourseGrade(assignments) {
       totalWeight += assignment.weight / 100;
     }
   }
-  
   return totalWeight > 0 ? totalWeightedScore / totalWeight : null;
 }
 
