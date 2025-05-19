@@ -1,3 +1,4 @@
+//used lecture material from Week #14 (May 5)
 const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema({
